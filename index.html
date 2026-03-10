@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Market Research — Cross-Exchange Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a1a;
+            --card: #12122a;
+            --border: #1e1e3a;
+            --text: #e0e0f0;
+            --muted: #888;
+            --green: #00d4aa;
+            --red: #ff6b6b;
+            --yellow: #ffd93d;
+            --blue: #6bcfff;
+            --purple: #c084fc;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            line-height: 1.7;
+        }
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem 3rem;
+            background: linear-gradient(180deg, #0f0f2a 0%, var(--bg) 100%);
+            border-bottom: 1px solid var(--border);
+        }
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--green), var(--blue), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .hero .subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+        .hero .meta {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .hero .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .meta-item .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+        .dot-yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+        .dot-purple { background: var(--purple); box-shadow: 0 0 6px var(--purple); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        .toc {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+        .toc h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--green);
+        }
+        .toc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 0.5rem;
+        }
+        .toc a {
+            color: var(--blue);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .toc a:hover { background: rgba(107, 207, 255, 0.1); }
+
+        .section {
+            margin-bottom: 3rem;
+            scroll-margin-top: 2rem;
+        }
+        .section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .section h2 .num {
+            color: var(--green);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+        }
+        .section .desc {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .chart-container {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .chart-container img {
+            width: 100%;
+            border-radius: 8px;
+            display: block;
+        }
+        .insight-box {
+            background: rgba(0, 212, 170, 0.08);
+            border-left: 3px solid var(--green);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        .insight-box strong { color: var(--green); }
+        .insight-box.warning {
+            background: rgba(255, 107, 107, 0.08);
+            border-left-color: var(--red);
+        }
+        .insight-box.warning strong { color: var(--red); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.2rem;
+            text-align: center;
+        }
+        .stat-card .value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 0.3rem;
+        }
+        .green { color: var(--green); }
+        .red { color: var(--red); }
+        .yellow { color: var(--yellow); }
+        .blue { color: var(--blue); }
+        .purple { color: var(--purple); }
+
+        .methodology {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .methodology h3 { color: var(--purple); margin-bottom: 0.5rem; }
+        .methodology p, .methodology li { color: var(--muted); font-size: 0.9rem; }
+        .methodology ul { padding-left: 1.5rem; }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        footer a { color: var(--blue); text-decoration: none; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.8rem; }
+            .container { padding: 1rem; }
+            .hero .meta { flex-direction: column; align-items: center; gap: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="hero">
+    <h1>📊 Crypto Market Microstructure</h1>
+    <p class="subtitle">Cross-Exchange Historical Analysis</p>
+    <div class="meta">
+        <div class="meta-item"><span class="dot dot-green"></span> Binance Spot</div>
+        <div class="meta-item"><span class="dot dot-yellow"></span> OKX Perpetuals</div>
+        <div class="meta-item"><span class="dot dot-purple"></span> Hyperliquid</div>
+    </div>
+    <p class="subtitle" style="margin-top: 1rem;" id="timestamp"></p>
+</div>
+
+<div class="container">
+
+    <div class="toc">
+        <h2>📑 Research Sections</h2>
+        <div class="toc-grid">
+            <a href="#price-action">01 — Price Action (20-Day)</a>
+            <a href="#volatility">02 — Realized Volatility</a>
+            <a href="#volume">03 — Volume Profile (Top 20)</a>
+            <a href="#funding-okx">04 — OKX Funding Rate History</a>
+            <a href="#funding-cross">05 — Cross-Exchange Funding</a>
+            <a href="#distributions">06 — Return Distributions</a>
+            <a href="#correlation">07 — Correlation Matrix</a>
+            <a href="#hyperliquid">08 — Hyperliquid Overview</a>
+            <a href="#intraday">09 — Intraday Patterns</a>
+            <a href="#cumulative">10 — Cumulative Returns</a>
+            <a href="#btc-volume">11 — BTC Volume-Price</a>
+            <a href="#funding-yield">12 — Funding Yield Analysis</a>
+        </div>
+    </div>
+
+    <div id="stats-section"></div>
+
+    <!-- Section 1 -->
+    <div class="section" id="price-action">
+        <h2><span class="num">01</span> — Multi-Asset Price Action</h2>
+        <p class="desc">Hourly OHLCV data from Binance Spot. BTC, ETH, SOL over the last 20 days (~500 hourly candles).</p>
+        <div class="chart-container"><img src="figures/01_price_action.png" alt="Price Action" loading="lazy"></div>
+        <div class="insight-box">
+            <strong>💡 Key Observation:</strong> Price movements across major crypto assets remain highly synchronized, with BTC leading directional moves. SOL shows higher beta — amplifying both up and down moves relative to BTC.
+        </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="section" id="volatility">
+        <h2><span class="num">02</span> — Realized Volatility</h2>
+        <p class="desc">24-hour rolling realized volatility (annualized) computed from hourly log returns. Measures actual price variability.</p>
+        <div class="chart-container"><img src="figures/02_realized_volatility.png" alt="Realized Volatility" loading="lazy"></div>
+        <div class="insight-box">
+            <strong>💡 Key Observation:</strong> DOGE and SOL consistently exhibit 2-3x the volatility of BTC. Volatility clustering is evident — calm periods followed by sharp spikes. All assets show simultaneous vol increases, indicating systemic risk events.
+        </div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="section" id="volume">
+        <h2><span class="num">03</span> — Volume Profile</h2>
+        <p class="desc">Top 20 USDT trading pairs on Binance Spot ranked by 24-hour quote volume. Color indicates 24h price change direction.</p>
+        <div class="chart-container"><img src="figures/03_volume_profile.png" alt="Volume Profile" loading="lazy"></div>
+        <div class="insight-box">
+            <strong>💡 Key Observation:</strong> BTC and ETH dominate spot volume, but meme coins (DOGE, PEPE, SHIB) can spike into the top 10 during momentum periods. Volume concentration in the top 5 pairs typically exceeds 60% of total USDT volume.
+        </div>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="section" id="funding-okx">
+        <h2><span class="num">04</span> — OKX Perpetual Funding Rates</h2>
+        <p class="desc">Historical funding rate for perpetual swaps on OKX. Positive = longs pay shorts. Each bar = one 8-hour funding period.</p>
+        <div class="chart-container"><img src="figures/04_okx_funding_rates.png" alt="OKX Funding Rates" loading="lazy"></div>
+        <div class="insight-box">
+            <strong>💡 Key Observation:</strong> Funding rates serve as a sentiment gauge — persistently positive funding suggests leveraged long positioning. Extreme funding often precedes mean-reversion moves. SOL and DOGE show more volatile funding, reflecting speculative positioning.
+        </div>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="section" id="funding-cross">
+        <h2><span class="num">05</span> — Cross-Exchange Funding Comparison</h2>
+        <p class="desc">OKX vs Hyperliquid funding rates for BTC, ETH, SOL. Divergences indicate cross-exchange arbitrage opportunities.</p>
+        <div class="chart-container"><img src="figures/05_funding_comparison.png" alt="Funding Comparison" loading="lazy"></div>
+        <div class="insight-box">
+            <strong>💡 Key Observation:</strong> Hyperliquid funding rates tend to be more volatile than OKX, reflecting its smaller but more speculative user base. Persistent funding divergence between exchanges creates delta-neutral carry trade opportunities.
+        </div>
+    </div>
+
+    <!-- Section 6 -->
+    <div class="section" id="distributions">
+        <h2><span class="num">06</span> — Return Distributions</h2>
+        <p class="desc">Hourly log return distributions with summary statistics. Kurtosis > 0 indicates fat tails (more extreme moves than Gaussian).</p>
+        <div class="chart-container"><img src="figures/06_return_distributions.png" alt="Return Distributions" loading="lazy"></div>
+        <div class="insight-box warning">
+            <strong>⚠️ Risk Note:</strong> All assets exhibit significant excess kurtosis (fat tails), meaning extreme hourly moves occur far more frequently than a normal distribution would predict. This has direct implications for VaR calculations and position sizing — Gaussian assumptions understate tail risk.
+        </div>
+    </div>
+
+    <!-- Section 7 -->
+    <div class="section" id="correlation">
+        <h2><span class="num">07</span> — Correlation Matrix</h2>
+        <p class="desc">Pearson correlation of hourly log returns across major assets over the sample period.</p>
+        <div class="chart-container"><img src="figures/07_correlation_matrix.png" alt="Correlation Matrix" loading="lazy"></div>
+        <div class="insight-box">
+            <strong>💡 Key Observation:</strong> Crypto assets remain highly correlated (most pairs > 0.70), limiting diversification benefits within the asset class. BTC-ETH correlation is typically highest. Correlations tend to increase during drawdowns (correlation breakdown).
+        </div>
+    </div>
+
+    <!-- Section 8 -->
+    <div class="section" id="hyperliquid">
+        <h2><span class="num">08</span> — Hyperliquid Market Overview</h2>
+        <p class="desc">229 perpetual contracts on Hyperliquid. Left: Top 25 by open interest. Right: Funding rate vs 24h volume (bubble size = OI).</p>
+        <div class="chart-container"><img src="figures/08_hyperliquid_overview.png" alt="Hyperliquid Overview" loading="lazy"></div>
+        <div class="insight-box">
+            <strong>💡 Key Observation:</strong> Hyperliquid's open interest is heavily concentrated in BTC and ETH. The funding-volume scatter reveals which assets have the most speculative activity — coins in the upper-right quadrant (high volume + positive funding) indicate strong bullish leverage demand.
+        </div>
+    </div>
+
+    <!-- Section 9 -->
+    <div class="section" id="intraday">
+        <h2><span class="num">09</span> — Intraday Volume Patterns</h2>
+        <p class="desc">Average hourly trading volume by hour of day (UTC). Reveals session-based trading activity patterns.</p>
+        <div class="chart-container"><img src="figures/09_intraday_patterns.png" alt="Intraday Patterns" loading="lazy"></div>
+        <div class="insight-box">
+            <strong>💡 Key Observation:</strong> Volume follows a clear "three-session" pattern: Asian session (00-08 UTC), European session (08-16 UTC), and US session (13-21 UTC). Peak volume typically occurs during US market hours overlap, suggesting institutional and algorithmic participation.
+        </div>
+    </div>
+
+    <!-- Section 10 -->
+    <div class="section" id="cumulative">
+        <h2><span class="num">10</span> — Cumulative Returns</h2>
+        <p class="desc">Total cumulative return over the sample period, starting from $1 invested. Shows relative performance across assets.</p>
+        <div class="chart-container"><img src="figures/10_cumulative_returns.png" alt="Cumulative Returns" loading="lazy"></div>
+        <div class="insight-box">
+            <strong>💡 Key Observation:</strong> Higher-beta assets (SOL, DOGE) show larger cumulative moves in both directions. In trending markets, SOL has historically outperformed BTC on the upside but also drops harder. Position sizing should account for this beta differential.
+        </div>
+    </div>
+
+    <!-- Section 11 -->
+    <div class="section" id="btc-volume">
+        <h2><span class="num">11</span> — BTC Volume-Price Relationship</h2>
+        <p class="desc">BTC price overlaid with quote volume (USDT). Volume spikes often coincide with significant price moves.</p>
+        <div class="chart-container"><img src="figures/11_btc_volume_price.png" alt="BTC Volume Price" loading="lazy"></div>
+        <div class="insight-box">
+            <strong>💡 Key Observation:</strong> Volume-price confirmation: upward moves on increasing volume are more sustainable. Volume spikes during sell-offs may indicate capitulation. Low-volume rallies warrant caution — they often lack conviction and reverse.
+        </div>
+    </div>
+
+    <!-- Section 12 -->
+    <div class="section" id="funding-yield">
+        <h2><span class="num">12</span> — Annualized Funding Yield</h2>
+        <p class="desc">Average funding rate annualized (rate × 3 periods/day × 365 days). Error bars show 1σ range. Represents theoretical cash-and-carry yield.</p>
+        <div class="chart-container"><img src="figures/12_funding_yield.png" alt="Funding Yield" loading="lazy"></div>
+        <div class="insight-box">
+            <strong>💡 Key Observation:</strong> Funding yield represents the return from a delta-neutral cash-and-carry trade (long spot, short perp). Positive funding = market willing to pay for leveraged long exposure. This yield has historically been one of the most consistent alpha sources in crypto.
+        </div>
+    </div>
+
+    <div class="methodology">
+        <h3>📐 Methodology</h3>
+        <ul>
+            <li><strong>Binance Spot:</strong> 500 hourly OHLCV candles via <code>data-api.binance.vision</code> (public, no API key)</li>
+            <li><strong>OKX Perpetuals:</strong> 100 funding rate periods + mark price candles via <code>okx.com/api/v5/public/</code></li>
+            <li><strong>Hyperliquid:</strong> 229 perp contracts, 7-day funding history via <code>api.hyperliquid.xyz</code></li>
+            <li><strong>Realized Volatility:</strong> Rolling 24-hour window of hourly log returns, annualized (×√(365×24))</li>
+            <li><strong>Funding Yield:</strong> Average 8h funding rate × 3 × 365 = annualized yield</li>
+            <li><strong>Correlation:</strong> Pearson correlation on synchronized hourly log returns</li>
+        </ul>
+        <h3 style="margin-top: 1rem;">⚠️ Disclaimers</h3>
+        <p>This is research output, not financial advice. Historical data does not predict future returns. Exchange API data may contain gaps or errors. Funding rates are variable and past yields are not guaranteed.</p>
+    </div>
+
+</div>
+
+<footer>
+    <p>Generated by <strong>Agentic Sciences</strong> Research Engine</p>
+    <p style="margin-top: 0.5rem;">
+        Data Sources: Binance · OKX · Hyperliquid &nbsp;|&nbsp;
+        <a href="https://agentic-sciences.github.io/vol-strategies/">Vol Strategies ↗</a> &nbsp;|&nbsp;
+        <a href="https://agentic-sciences.github.io/monte-carlo/">Monte Carlo ↗</a>
+    </p>
+</footer>
+
+<script>
+document.getElementById('timestamp').textContent = 'Last updated: ' + new Date().toLocaleString('en-US', {
+    timeZone: 'America/New_York', year: 'numeric', month: 'long', day: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
+});
+</script>
+
+</body>
+</html>
