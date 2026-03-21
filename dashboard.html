@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComeWealth Research Dashboard</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-dim: #8b949e;
+            --green: #3fb950;
+            --yellow: #d29922;
+            --red: #f85149;
+            --blue: #58a6ff;
+            --purple: #bc8cff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        .header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .header h1 span { color: var(--blue); }
+        .header .meta {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            padding: 20px 24px;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .card h2 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+        .status-dot.yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+        .status-dot.red { background: var(--red); }
+        .status-dot.blue { background: var(--blue); }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-label { color: var(--text-dim); }
+        .stat-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+        .stat-value.green { color: var(--green); }
+        .stat-value.yellow { color: var(--yellow); }
+        .stat-value.red { color: var(--red); }
+        .stat-value.blue { color: var(--blue); }
+        .task-list { list-style: none; }
+        .task-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task-list li:last-child { border-bottom: none; }
+        .badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .badge.done { background: rgba(63,185,80,0.15); color: var(--green); }
+        .badge.running { background: rgba(210,153,34,0.15); color: var(--yellow); }
+        .badge.error { background: rgba(248,81,73,0.15); color: var(--red); }
+        .badge.pending { background: rgba(139,148,158,0.15); color: var(--text-dim); }
+        .figure-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            padding: 0 24px 24px;
+        }
+        .figure-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .figure-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .figure-card .caption {
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+        .section-title {
+            padding: 16px 24px 8px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .findings {
+            padding: 0 24px 24px;
+        }
+        .finding {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+        }
+        .finding h3 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--blue);
+        }
+        .finding p {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: 1fr; padding: 12px; }
+            .figure-grid { grid-template-columns: 1fr; padding: 0 12px 12px; }
+            .header { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💰 <span>ComeWealth</span> Research Dashboard</h1>
+        <div class="meta">Last updated: <span id="updateTime"></span> | Server: research3</div>
+    </div>
+
+    <div class="grid">
+        <!-- Overview -->
+        <div class="card">
+            <h2><span class="status-dot green"></span> Pipeline Overview</h2>
+            <div class="stat-row"><span class="stat-label">Analyses Completed</span><span class="stat-value green">9</span></div>
+            <div class="stat-row"><span class="stat-label">CSV Files</span><span class="stat-value">13</span></div>
+            <div class="stat-row"><span class="stat-label">Figures</span><span class="stat-value">11</span></div>
+            <div class="stat-row"><span class="stat-label">Exchanges Analyzed</span><span class="stat-value blue">27</span></div>
+            <div class="stat-row"><span class="stat-label">Total Runtime</span><span class="stat-value">~10 min</span></div>
+            <div class="stat-row"><span class="stat-label">Data Source</span><span class="stat-value">Kaiko OB10-v2</span></div>
+        </div>
+
+        <!-- Task Status -->
+        <div class="card">
+            <h2><span class="status-dot yellow pulse"></span> Task Status</h2>
+            <ul class="task-list">
+                <li>Quick Spread (6 exchanges) <span class="badge done">✓ 3.2s</span></li>
+                <li>Full Spread (27 exchanges) <span class="badge done">✓ 37s</span></li>
+                <li>Spot-Futures Basis (13 days) <span class="badge done">✓ 108s</span></li>
+                <li>ETH Basis + OB Imbalance <span class="badge done">✓ 51s</span></li>
+                <li>Intraday Patterns (5 days) <span class="badge done">✓ 291s</span></li>
+                <li>Market Impact (5 exchanges) <span class="badge done">✓ 6.4s</span></li>
+                <li>BTC-ETH Correlation <span class="badge done">✓ 34s</span></li>
+                <li>Order Flow Toxicity <span class="badge done">✓ 28s</span></li>
+                <li>券商中国 Scraping <span class="badge running">26/122</span></li>
+            </ul>
+        </div>
+
+        <!-- Key Metrics: Spread -->
+        <div class="card">
+            <h2>📊 BTC Spread Rankings (Top 5)</h2>
+            <div class="stat-row"><span class="stat-label">Binance</span><span class="stat-value green">0.0035 bps</span></div>
+            <div class="stat-row"><span class="stat-label">Huobi</span><span class="stat-value green">0.0035 bps</span></div>
+            <div class="stat-row"><span class="stat-label">CoinEx</span><span class="stat-value green">0.0035 bps</span></div>
+            <div class="stat-row"><span class="stat-label">OKX</span><span class="stat-value">0.0351 bps</span></div>
+            <div class="stat-row"><span class="stat-label">Binance Futures</span><span class="stat-value">0.0352 bps</span></div>
+        </div>
+
+        <!-- Key Metrics: Basis -->
+        <div class="card">
+            <h2>📈 Spot-Futures Basis (Binance BTC)</h2>
+            <div class="stat-row"><span class="stat-label">13-day Median</span><span class="stat-value red">-4.66 bps</span></div>
+            <div class="stat-row"><span class="stat-label">Range</span><span class="stat-value">[-5.44, -2.67]</span></div>
+            <div class="stat-row"><span class="stat-label">Direction</span><span class="stat-value red">Backwardation</span></div>
+            <div class="stat-row"><span class="stat-label">Matched Ticks</span><span class="stat-value">5,629</span></div>
+            <div class="stat-row"><span class="stat-label">ETH Basis</span><span class="stat-value red">-3.08 to -5.47</span></div>
+        </div>
+
+        <!-- Market Impact -->
+        <div class="card">
+            <h2>💥 Market Impact ($1M Trade)</h2>
+            <div class="stat-row"><span class="stat-label">Binance Futures</span><span class="stat-value green">0.95 bps</span></div>
+            <div class="stat-row"><span class="stat-label">Binance Spot</span><span class="stat-value green">1.85 bps</span></div>
+            <div class="stat-row"><span class="stat-label">OKX</span><span class="stat-value yellow">4.34 bps</span></div>
+            <div class="stat-row"><span class="stat-label">Kraken</span><span class="stat-value red">17.99 bps</span></div>
+            <div class="stat-row"><span class="stat-label">Coinbase</span><span class="stat-value red">22.52 bps</span></div>
+        </div>
+
+        <!-- Correlation -->
+        <div class="card">
+            <h2>🔗 BTC-ETH Correlation</h2>
+            <div class="stat-row"><span class="stat-label">Correlation</span><span class="stat-value blue">0.622</span></div>
+            <div class="stat-row"><span class="stat-label">Lead-Lag</span><span class="stat-value">ETH leads by ~5s</span></div>
+            <div class="stat-row"><span class="stat-label">BTC Vol</span><span class="stat-value">3.68 bps</span></div>
+            <div class="stat-row"><span class="stat-label">ETH Vol</span><span class="stat-value">4.46 bps</span></div>
+            <div class="stat-row"><span class="stat-label">Intraday Imbalance</span><span class="stat-value">Americas bid-heavy</span></div>
+        </div>
+    </div>
+
+    <h2 class="section-title">🔑 Key Findings</h2>
+    <div class="findings">
+        <div class="finding">
+            <h3>1. Binance Dominance Confirmed</h3>
+            <p>Binance BTC spot spread at 0.0035 bps (minimum tick size). Market impact for $1M trade only 1.85 bps on spot, 0.95 bps on futures. 5 exchanges share the tightest spread tier.</p>
+        </div>
+        <div class="finding">
+            <h3>2. Persistent Backwardation in BTC/ETH Futures</h3>
+            <p>BTC futures consistently below spot by -4.66 bps (median over 13 days). ETH shows same pattern (-3.08 to -5.47 bps). Suggests structural short hedging demand or funding rate arbitrage pressure.</p>
+        </div>
+        <div class="finding">
+            <h3>3. ETH Leads BTC by ~5 Seconds</h3>
+            <p>Cross-correlation analysis shows ETH price changes lead BTC by approximately 1 snapshot (~5 seconds). Correlation = 0.622. May indicate information flow direction or large trader behavior.</p>
+        </div>
+        <div class="finding">
+            <h3>4. Regional Trading Session Effects</h3>
+            <p>European session (08-14 UTC): deepest order books ($36.6M). Americas session (14-21 UTC): bid-heavy imbalance (1.16). Spread remains constant at 0.0035 bps across all sessions.</p>
+        </div>
+        <div class="finding">
+            <h3>5. Extreme Exchange Fragmentation</h3>
+            <p>Tier-1 vs Tier-3 spread differs by 1000x (0.0035 vs 3923 bps). Depth ranges from $126M (BitForex) to $5K (Quoine). Cross-exchange arb opportunities: up to 9.3 bps.</p>
+        </div>
+    </div>
+
+    <h2 class="section-title">📊 Figures</h2>
+    <div class="figure-grid">
+        <div class="figure-card">
+            <img src="figures/full_spread_20260321.png" alt="Spread Comparison" loading="lazy">
+            <div class="caption">BTC Bid-Ask Spreads — 27 Exchanges (log scale)</div>
+        </div>
+        <div class="figure-card">
+            <img src="figures/full_depth_20260321.png" alt="Depth Profile" loading="lazy">
+            <div class="caption">Order Book Depth — Top 15 Exchanges</div>
+        </div>
+        <div class="figure-card">
+            <img src="figures/basis_nearest_20260321.png" alt="Basis Analysis" loading="lazy">
+            <div class="caption">BTC Spot-Futures Basis (5,629 ticks, 13 days)</div>
+        </div>
+        <div class="figure-card">
+            <img src="figures/market_impact_20260321.png" alt="Market Impact" loading="lazy">
+            <div class="caption">Market Impact Curves — 5 Exchanges</div>
+        </div>
+        <div class="figure-card">
+            <img src="figures/eth_imbalance_20260321.png" alt="ETH + Imbalance" loading="lazy">
+            <div class="caption">ETH Basis + OB Imbalance Analysis</div>
+        </div>
+        <div class="figure-card">
+            <img src="figures/full_arb_heatmap_20260321.png" alt="Arb Heatmap" loading="lazy">
+            <div class="caption">Cross-Exchange Price Differences Heatmap</div>
+        </div>
+        <div class="figure-card">
+            <img src="figures/intraday_patterns_20260321.png" alt="Intraday Patterns" loading="lazy">
+            <div class="caption">BTC Intraday Patterns (Spread, Depth, Imbalance, Vol)</div>
+        </div>
+        <div class="figure-card">
+            <img src="figures/btc_eth_cross_corr_single_day_20260321_single_day.png" alt="BTC-ETH Correlation" loading="lazy">
+            <div class="caption">BTC-ETH Cross-Correlation (Lead-Lag)</div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('updateTime').textContent = new Date().toLocaleString('en-US', {
+            timeZone: 'America/New_York',
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }) + ' EDT';
+    </script>
+</body>
+</html>
